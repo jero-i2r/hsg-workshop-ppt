@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vibe Coding Workshop - Explorer Edition</title>
-    <!-- 字体引入：霞鹜文楷、思源黑体、Playfair Display、像素中文 -->
+    <title>Vibe Coding Workshop - Final Edition</title>
+    <!-- 字体引入 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.1.0/style.css" />
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;500&family=Press+Start+2P&family=DotGothic16&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -14,6 +14,8 @@
             --accent-primary: #c3a6ff; 
             --accent-secondary: #80ffea; 
             --accent-tertiary: #ff8ab4;
+            --claude-orange: #D97757;
+            --code-bg: #1e2230;
             --maple-blue: #5d9cec;
             --maple-orange: #ffce54;
             --text-bright: #ffffff;
@@ -29,202 +31,95 @@
             --font-pixel-cn: 'DotGothic16', sans-serif; 
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background-color: var(--bg-dark);
             color: var(--text-bright);
-            font-family: var(--font-body);
+            font-family: var(--font-heading), var(--font-body);
             overflow: hidden; 
             -webkit-font-smoothing: antialiased;
         }
 
         /* 3D 背景层 */
         .scene-bg {
-            position: fixed;
-            inset: 0;
-            z-index: -2;
+            position: fixed; inset: 0; z-index: -2;
             background: radial-gradient(circle at 50% 50%, #0d0d1a 0%, var(--bg-dark) 100%);
             overflow: hidden;
         }
 
         .grid-plane {
-            position: absolute;
-            width: 250%;
-            height: 250%;
-            top: -75%;
-            left: -75%;
-            background-image: 
-                linear-gradient(var(--border) 1px, transparent 1px),
-                linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 100px 100px;
-            transform: rotateX(70deg) translateZ(-300px);
-            opacity: 0.12;
-            transition: transform 0.2s linear;
+            position: absolute; width: 250%; height: 250%; top: -75%; left: -75%;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 100px 100px; transform: rotateX(70deg) translateZ(-300px); opacity: 0.12; transition: transform 0.2s linear;
         }
 
         #viewport {
-            height: 100vh;
-            overflow-y: auto;
-            scroll-snap-type: y mandatory;
-            scroll-behavior: smooth;
-            perspective: 2500px;
-            perspective-origin: center;
+            height: 100vh; overflow-y: auto; scroll-snap-type: y mandatory;
+            scroll-behavior: smooth; perspective: 2000px; perspective-origin: center;
         }
-
         #viewport::-webkit-scrollbar { display: none; }
 
         section {
-            position: relative;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            scroll-snap-align: start;
-            padding: 4rem;
-            transform-style: preserve-3d;
+            position: relative; height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; scroll-snap-align: start;
+            padding: 2rem; transform-style: preserve-3d;
         }
 
         .content {
-            max-width: 1240px;
-            width: 100%;
-            z-index: 10;
-            transform-style: preserve-3d;
-            opacity: 0;
-            transform: translateZ(-400px) rotateX(20deg); 
-            transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 1280px; width: 100%; z-index: 10; transform-style: preserve-3d;
+            opacity: 0; transform: translateZ(-400px) rotateX(15deg); 
+            transition: opacity 0.8s ease, filter 0.8s ease; 
         }
 
-        section.is-visible .content {
-            opacity: 1;
-            transform: translateZ(0) rotateX(0deg);
-        }
+        section.is-visible .content { opacity: 1; transform: translateZ(0) rotateX(0deg); }
 
-        /* 标题动画 */
+        /* S1: 主标题 */
         .main-title {
-            font-family: var(--font-serif);
-            font-size: clamp(4rem, 14vw, 10rem);
-            font-weight: 900;
-            line-height: 0.9;
-            letter-spacing: -0.02em;
+            font-family: var(--font-serif); font-size: clamp(4rem, 14vw, 10rem);
+            font-weight: 900; line-height: 0.9; letter-spacing: -0.02em;
             background: linear-gradient(135deg, #fff 40%, var(--accent-primary), var(--accent-secondary));
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shimmer 10s linear infinite;
-            margin-bottom: 2rem;
+            background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: shimmer 10s linear infinite; margin-bottom: 2rem;
         }
-
         @keyframes shimmer { to { background-position: 200% center; } }
 
-        /* Maple Bio 样式 */
+        /* S2: Bio - 强制使用方舟像素字体 */
+        .pixel-ui-container { font-family: var(--font-pixel-cn) !important; }
         .maple-ui {
-            background: rgba(15, 15, 25, 0.98);
-            border: 4px solid #fff;
+            background: rgba(15, 15, 25, 0.98); border: 4px solid #fff;
             box-shadow: 0 0 0 4px #000, 15px 15px 0 rgba(0,0,0,0.6);
-            border-radius: 2px;
-            padding: 3rem;
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 4rem;
-            position: relative;
-            font-family: var(--font-pixel-cn);
+            border-radius: 2px; padding: 3rem; display: grid;
+            grid-template-columns: 320px 1fr; gap: 4rem; position: relative;
         }
-
         .maple-header {
-            position: absolute;
-            top: -24px;
-            left: 40px;
-            background: #fff;
-            color: #000;
-            padding: 6px 24px;
-            font-family: var(--font-pixel-en);
-            font-size: 0.8rem;
-            border: 4px solid #000;
-            z-index: 20;
+            position: absolute; top: -24px; left: 40px; background: #fff; color: #000;
+            padding: 6px 24px; font-family: var(--font-pixel-en); font-size: 0.8rem; border: 4px solid #000; z-index: 20;
         }
-
         .avatar-box {
-            background: #000;
-            border: 4px solid var(--maple-blue);
-            height: 320px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
+            background: #000; border: 4px solid var(--maple-blue); height: 320px; width: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
         }
-
         .avatar-img { width: 85%; height: 85%; object-fit: contain; image-rendering: pixelated; }
-
         .quest-under-avatar {
-            background: rgba(128, 255, 234, 0.05);
-            border: 2px solid var(--accent-secondary);
-            padding: 1.2rem;
-            border-radius: 4px;
-            margin-top: 2rem;
-            transition: transform 0.4s ease, opacity 0.4s ease;
+            background: rgba(128, 255, 234, 0.05); border: 2px solid var(--accent-secondary);
+            padding: 1.2rem; border-radius: 4px; margin-top: 2rem; transition: transform 0.4s ease, opacity 0.4s ease;
             transform-origin: center center;
         }
-
-        .badge-row { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; }
         .badge {
-            font-family: var(--font-pixel-en);
-            font-size: 0.65rem;
-            padding: 5px 12px;
-            color: #000;
-            border-radius: 2px;
-            min-width: 85px;
-            text-align: center;
-            display: inline-block;
-            text-shadow: none;
+            font-family: var(--font-pixel-en); font-size: 0.65rem; padding: 5px 12px; color: #000;
+            border-radius: 2px; min-width: 85px; text-align: center; display: inline-block;
         }
         .badge.server { background: var(--maple-blue); }
         .badge.job { background: var(--accent-secondary); }
-
         .typewriter {
             display: inline-block; overflow: hidden; border-right: 2px solid var(--accent-secondary);
-            white-space: nowrap; width: 0;
-            animation: typing 5s steps(35, end) infinite;
+            white-space: nowrap; width: 0; animation: typing 5s steps(35, end) infinite;
         }
         @keyframes typing { 0% { width: 0; } 50%, 85% { width: 100%; } 100% { width: 0; } }
 
-        /* Quote 样式 */
-        .quote-container { max-width: 1000px; position: relative; transform-style: preserve-3d; }
-        .quote-text {
-            font-family: var(--font-serif); font-size: clamp(2.5rem, 5vw, 3.8rem);
-            line-height: 1.3; font-weight: 700; color: #fff; margin-bottom: 3rem; transform: translateZ(50px);
-        }
-        .highlight-vibe { color: var(--accent-secondary); font-style: italic; }
-        .quote-author {
-            display: flex; align-items: center; gap: 1.5rem; font-family: var(--font-mono);
-            font-size: 1.2rem; color: var(--text-soft); transform: translateZ(100px);
-        }
-        .author-handle { color: var(--accent-primary); font-weight: 600; }
-        .quote-icon {
-            position: absolute; top: -60px; left: -40px; font-size: 8rem; color: var(--accent-primary);
-            opacity: 0.1; font-family: var(--font-serif); pointer-events: none;
-        }
-
-        /* 词汇横排 */
-        .words-layout {
-            display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 4rem;
-            transform-style: preserve-3d; width: 100%;
-        }
-        .vibe-word {
-            font-family: var(--font-heading); font-size: clamp(3.5rem, 8vw, 7rem);
-            letter-spacing: 0.15em; color: #fff; text-shadow: 0 0 40px rgba(195, 166, 255, 0.35);
-        }
-        .vibe-dot { color: var(--accent-secondary); font-size: 3rem; opacity: 0.5; margin: 0 -1rem; }
-
-        /* 浏览器问卷 */
+        /* S5: Browser Mockup */
         .browser-mockup {
             background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 50px 100px rgba(0,0,0,0.8);
             width: 100%; max-width: 1000px; margin: 0 auto; color: #333; transform-style: preserve-3d;
@@ -240,19 +135,55 @@
             font-size: 13px; color: #666; border: 1px solid #ddd; border-bottom: none;
             margin-bottom: -13px; display: flex; align-items: center; gap: 8px;
         }
-        .browser-content { padding: 3rem; background: #fff; }
-        .survey-header-text h2 { color: #1a1a1a; font-size: 2.2rem; margin-bottom: 1rem; }
-        .survey-meta { color: #888; font-size: 0.85rem; line-height: 1.5; margin-bottom: 2rem; }
-        .survey-box { background: #f9f9ff; border-left: 4px solid #5d5fef; padding: 2rem; border-radius: 4px; }
-        .survey-q-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 1.5rem; color: #222; }
+        .browser-content { padding: 3rem; background: #fff; color: #111; }
         .survey-ans-item {
             background: #fff; border: 1px solid #eee; padding: 1rem 1.5rem; border-radius: 8px;
-            display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem; transition: all 0.2s; cursor: pointer;
+            display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem; transition: 0.3s;
+            cursor: pointer; font-family: var(--font-heading);
         }
-        .survey-ans-item:hover { border-color: #5d5fef; background: #f3f3ff; transform: translateX(10px); }
-        .check-circle { width: 18px; height: 18px; border: 2px solid #ddd; border-radius: 4px; flex-shrink: 0; }
+        .survey-ans-item:hover {
+            border-color: #5d5fef; background: #f3f3ff; transform: translateX(10px);
+        }
+        .check-circle { width: 20px; height: 20px; border: 2px solid #ddd; border-radius: 4px; flex-shrink: 0; }
 
-        /* 状态栏与导航 */
+        /* S6: Table */
+        .course-table { width: 100%; border-collapse: separate; border-spacing: 0 1rem; transform-style: preserve-3d; font-family: var(--font-heading); }
+        .course-row {
+            background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border);
+            transition: all 0.5s ease; transform-style: preserve-3d;
+        }
+        .course-row td { padding: 1.8rem; font-size: 1.25rem; color: #fff; font-family: var(--font-heading); }
+
+        /* Prompt 代码框 */
+        .prompt-grid { display: grid; gap: 1.5rem; width: 100%; }
+        .prompt-box {
+            background: var(--code-bg); border-radius: 12px; padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); position: relative;
+            transform-style: preserve-3d;
+        }
+        .prompt-text {
+            color: var(--claude-orange); font-family: var(--font-heading);
+            font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap;
+        }
+        .prompt-tag {
+            position: absolute; top: -10px; right: 15px; font-family: var(--font-mono);
+            font-size: 0.6rem; color: #000; background: var(--accent-primary);
+            padding: 2px 8px; border-radius: 4px; font-weight: 800;
+        }
+
+        /* 词汇横排 */
+        .words-layout {
+            display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 4rem;
+            transform-style: preserve-3d; width: 100%;
+        }
+        .vibe-word {
+            font-family: var(--font-heading); font-size: clamp(3.5rem, 8vw, 7rem);
+            letter-spacing: 0.15em; color: #fff; text-shadow: 0 0 40px rgba(195, 166, 255, 0.35);
+        }
+        .vibe-dot { color: var(--accent-secondary); font-size: 3rem; opacity: 0.5; margin: 0 -1rem; }
+
+        /* 状态栏 */
         .status-bar {
             position: fixed; bottom: 2rem; left: 3rem; right: 3rem; display: flex; justify-content: space-between;
             font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 4px; color: var(--text-soft); z-index: 100;
@@ -260,10 +191,9 @@
         .progress-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: 0.4s; }
         .progress-dot.active { background: var(--accent-secondary); transform: scale(2); box-shadow: 0 0 10px var(--accent-secondary); }
 
-        .quest-item { display: flex; align-items: flex-start; gap: 1.2rem; margin-bottom: 1.2rem; font-size: 1.15rem; line-height: 1.6; text-shadow: 2px 2px 0 #000; }
         .glass-card {
             background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--border);
-            padding: 3.5rem; border-radius: 48px; transition: all 0.6s cubic-bezier(0.2, 1, 0.3, 1);
+            padding: 3rem; border-radius: 48px; transition: all 0.6s cubic-bezier(0.2, 1, 0.3, 1);
         }
     </style>
 </head>
@@ -274,7 +204,7 @@
     </div>
 
     <div id="viewport">
-        <!-- S1: Welcome -->
+        <!-- S1: 封面 -->
         <section id="s1">
             <div class="content" style="text-align: center;">
                 <div style="font-size: 0.8rem; letter-spacing: 0.8em; color: var(--accent-secondary); margin-bottom: 2.5rem; font-family: var(--font-mono);">SYSTEM_BOOT: SUCCESS</div>
@@ -284,9 +214,9 @@
             </div>
         </section>
 
-        <!-- S2: Bio -->
+        <!-- S2: 菜菜资料卡 -->
         <section id="s2">
-            <div class="content">
+            <div class="content pixel-ui-container">
                 <div class="maple-ui">
                     <div class="maple-header">PLAYER_PROFILE</div>
                     <div class="avatar-side">
@@ -296,24 +226,21 @@
                         </div>
                         <div class="quest-under-avatar" id="quest-anchor">
                             <h4 style="font-family: var(--font-pixel-en); font-size: 0.6rem; color: var(--accent-secondary); margin-bottom: 0.8rem; letter-spacing: 2px; opacity: 0.8;">CURRENT_QUEST</h4>
-                            <div style="display: flex; align-items: flex-start; gap: 0.8rem; font-size: 1rem;">
-                                <i data-lucide="crosshair" size="18" style="color:var(--accent-secondary);"></i>
-                                <span>邀请更多玩家加入游戏</span>
-                            </div>
+                            <div style="display: flex; align-items: flex-start; gap: 0.8rem; font-size: 1rem;"><i data-lucide="crosshair" size="18" style="color:var(--accent-secondary);"></i><span>邀请更多玩家加入游戏</span></div>
                         </div>
                     </div>
                     <div class="info-side">
                         <div style="margin-bottom: 2rem; border-bottom: 2px solid rgba(255,255,255,0.06); padding-bottom: 1.5rem;">
                             <h2 style="font-size: 4.5rem; color: #fff; letter-spacing: 0.15em; margin-bottom: 1rem; text-shadow: 3px 3px 0 #000;">菜菜</h2>
-                            <div class="badge-row"><span class="badge server">SERVER</span><p style="font-size: 1.6rem; color: var(--maple-blue); text-shadow: 2px 2px 0 #000;">新加坡</p></div>
-                            <div class="badge-row"><span class="badge job">JOB</span><p style="font-size: 1.6rem; color: var(--accent-secondary); text-shadow: 2px 2px 0 #000;">LLM + 网络安全从业者</p></div>
+                            <div class="badge-row"><span class="badge server">SERVER</span><p style="font-size: 1.6rem; color: var(--maple-blue);">新加坡</p></div>
+                            <div class="badge-row"><span class="badge job">JOB</span><p style="font-size: 1.6rem; color: var(--accent-secondary);">LLM + 网络安全从业者</p></div>
                         </div>
                         <div>
                             <h4 style="font-family: var(--font-pixel-en); font-size: 0.75rem; color: var(--maple-orange); margin-bottom: 1.2rem; letter-spacing: 3px;">ACHIEVEMENTS</h4>
-                            <div class="quest-item"><i data-lucide="graduation-cap" size="20" style="color:var(--maple-blue);"></i><span>NTU PhD毕业，方向：深度学习 (DL) + 自然语言处理 (NLP)</span></div>
-                            <div class="quest-item"><i data-lucide="zap" size="20" style="color:var(--accent-tertiary);"></i><span>QS本硕AI/编程课辅导>100节，定制个人AI学习路径、企业AI升级咨询>20次</span></div>
-                            <div class="quest-item"><i data-lucide="award" size="20" style="color:var(--maple-orange);"></i><span>运营一个全女AI/vibe coding线上学习社群 (RealizAi)</span></div>
-                            <div class="quest-item">
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;"><i data-lucide="graduation-cap" size="20" style="color:var(--maple-blue);"></i><span>NTU PhD毕业，方向：深度学习 (DL) + NLP</span></div>
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;"><i data-lucide="zap" size="20" style="color:var(--accent-tertiary);"></i><span>QS本硕AI/编程课辅导>100节，咨询>20次</span></div>
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;"><i data-lucide="award" size="20" style="color:var(--maple-orange);"></i><span>运营一个全女AI/vibe coding线上学习社群 (RealizAi)</span></div>
+                            <div style="display: flex; gap: 1rem;">
                                 <i data-lucide="map" size="20" style="color:var(--accent-secondary);"></i>
                                 <div class="typewriter-wrapper"><span class="typewriter">与HerS.Ground合作开展新加坡线下workshop</span></div>
                             </div>
@@ -323,49 +250,144 @@
             </div>
         </section>
 
-        <!-- S3: Karpathy Quote -->
+        <!-- S3: Quote -->
         <section id="s3">
             <div class="content">
-                <div class="quote-container">
-                    <div class="quote-icon">“</div>
-                    <div class="quote-text">
-                        There's a new kind of coding I call <span class="highlight-vibe">"vibe coding"</span>, where you fully give in to the vibes, embrace exponentials, and forget that the code even exists.
+                <div class="quote-container" style="max-width:1000px;">
+                    <div style="font-family: var(--font-serif); font-size: clamp(2.2rem, 5vw, 3.5rem); line-height: 1.3; font-weight: 700; color: #fff; margin-bottom: 3rem;">
+                        There's a new kind of coding I call <span style="color: var(--accent-secondary); font-style: italic;">"vibe coding"</span>, where you fully give in to the vibes, embrace exponentials, and forget that the code even exists.
                     </div>
-                    <div class="quote-author">
-                        <i data-lucide="twitter" size="20"></i>
-                        <span>Andrej Karpathy</span>
-                        <span class="author-handle">@karpathy</span>
+                    <div style="display: flex; align-items: center; gap: 1.5rem; font-family: var(--font-mono); font-size: 1.2rem; color: var(--text-soft);">
+                        <i data-lucide="twitter" size="20"></i><span>Andrej Karpathy</span><span style="color: var(--accent-primary);">@karpathy</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- S4: Essences (Updated Content) -->
+        <!-- S4: Essences -->
         <section id="s4">
             <div class="content">
-                <div style="display: flex; align-items: baseline; gap: 3rem; margin-bottom: 6rem;">
+                <div style="display: flex; align-items: baseline; gap: 3rem; margin-bottom: 4rem;">
                     <h2 style="font-family: var(--font-heading); font-size: 4rem; font-style: italic;">Essences</h2>
                     <div style="height: 1px; flex-grow: 1; background: var(--border);"></div>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem;">
-                    <div class="glass-card">
-                        <h3 style="color: var(--accent-primary); margin-bottom: 1.8rem; font-family: var(--font-heading); font-size: 2.2rem;">Embrace the Vibe</h3>
-                        <p style="line-height: 1.8; opacity: 0.9;">不需要理解代码，放弃细节控制，专注于创意和意图。</p>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+                    <div class="glass-card"><h3 style="color: var(--accent-primary); margin-bottom: 1.5rem; font-size: 2rem;">Embrace the Vibe</h3><p>不需要理解代码，放弃细节控制，专注于创意和意图。</p></div>
+                    <div class="glass-card" style="transform: translateZ(100px);"><h3 style="color: var(--accent-secondary); margin-bottom: 1.5rem; font-size: 2rem;">即时反馈</h3><p>在短时间内看到创意转化为可运行的Demo，注重“做出来”，而不是“做完美”。</p></div>
+                    <div class="glass-card"><h3 style="color: var(--accent-tertiary); margin-bottom: 1.5rem; font-size: 2rem;">与AI协作</h3><p>通过自然语言描述需求，像修改文档一样与 AI 对话，不断补充提示与修正。</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- S5: Survey (Fixed) -->
+        <section id="s5">
+            <div class="content">
+                <div class="browser-mockup">
+                    <div class="browser-header">
+                        <div class="traffic-lights"><div class="light red"></div><div class="light yellow"></div><div class="light green"></div></div>
+                        <div class="browser-tab"><i data-lucide="form-input" size="14"></i> Vibe Survey</div>
                     </div>
-                    <div class="glass-card" style="transform: translateZ(100px); border-color: var(--accent-secondary);">
-                        <h3 style="color: var(--accent-secondary); margin-bottom: 1.8rem; font-family: var(--font-heading); font-size: 2.2rem;">即时反馈</h3>
-                        <p style="line-height: 1.8; opacity: 0.9;">在短时间内看到创意转化为可运行的Demo，注重“做出来”、可见，而不是“做完美”、严谨。</p>
-                    </div>
-                    <div class="glass-card">
-                        <h3 style="color: var(--accent-tertiary); margin-bottom: 1.8rem; font-family: var(--font-heading); font-size: 2.2rem;">与AI协作</h3>
-                        <p style="line-height: 1.8; opacity: 0.9;">通过自然语言描述需求，像修改文档一样与 AI 对话，不断补充“vibes”（提示、反馈、修正）。</p>
+                    <div class="browser-content">
+                        <h2 style="font-family: var(--font-heading); margin-bottom: 0.8rem; font-weight: 700;">vibe coding课调查问卷</h2>
+                        <p style="color: #666; font-size: 0.85rem; margin-bottom: 1.8rem; font-family: var(--font-heading);">本问卷由 ai 生成，仅用于需求调查。 CREATED BY 菜菜</p>
+                        <div style="background: #f9f9ff; border-left: 4px solid #5d5fef; padding: 2rem; border-radius: 4px;">
+                            <div style="font-weight: 700; margin-bottom: 1.5rem; font-size: 1.1rem; color: #222; font-family: var(--font-heading);">1. 假如你拥有一个"全能ai实习生",你最希望ta帮你解决工作中哪一类繁琐的事?</div>
+                            <div class="survey-options">
+                                <div class="survey-ans-item"><div class="check-circle"></div>A. 自动处理 Excel/表格,生成各种分析报告</div>
+                                <div class="survey-ans-item"><div class="check-circle"></div>B. 把我的零散想法快速变成一个精美的网页或展示工具</div>
+                                <div class="survey-ans-item"><div class="check-circle"></div>C. 自动化处理邮件、日程和提醒</div>
+                                <div class="survey-ans-item"><div class="check-circle"></div>D. 开发一个属于我自己的小工具(如:记账、打卡)</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- S5: Three Words -->
-        <section id="s5">
+        <!-- S6: Course Table -->
+        <section id="s6">
+            <div class="content">
+                <div style="display: flex; align-items: baseline; gap: 2.5rem; margin-bottom: 3rem;">
+                    <h2 style="font-family: var(--font-heading); font-size: 3.5rem;">Vibe Coding 课程</h2>
+                    <div style="height: 1px; flex-grow: 1; background: var(--border);"></div>
+                </div>
+                <table class="course-table">
+                    <tr class="course-row"><td>零基础入门</td><td>非技术背景</td><td style="color:var(--accent-secondary)">提示词工程 + MVP 思维</td></tr>
+                    <tr class="course-row"><td>有基础进阶</td><td>有开发经验</td><td style="color:var(--accent-secondary)">全栈技术栈 + 工程化</td></tr>
+                    <tr class="course-row"><td>项目实战</td><td>创业者 / 独立开发者</td><td style="color:var(--accent-secondary)">产品交付 + AI Agent</td></tr>
+                </table>
+            </div>
+        </section>
+
+        <!-- S7: Matrix -->
+        <section id="s7">
+            <div class="content" style="text-align: center;">
+                <h2 style="font-family: var(--font-heading); font-size: 3rem; margin-bottom: 3rem;">AI 编程工具象限</h2>
+                <div style="background: #fff; padding: 10px; border-radius: 12px; box-shadow: 0 40px 100px rgba(0,0,0,0.8);">
+                    <img src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*_Hrg4cPdxpvjGAtTKhQplg.png" style="width:100%; height:auto; display:block; border-radius:6px;">
+                </div>
+                <p style="margin-top: 1rem; opacity: 0.5; font-size: 0.9rem;">cr:design-bootcamp@Medium</p>
+            </div>
+        </section>
+
+        <!-- S8: Difficulty I -->
+        <section id="s8">
+            <div class="content">
+                <h2 style="font-family: var(--font-heading); font-size: 3rem; margin-bottom: 3rem;">如何分辨项目难度 (I)</h2>
+                <div class="prompt-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="prompt-box">
+                        <span class="prompt-tag">ANALYSIS</span>
+                        <div class="prompt-text">我想做一个[描述你的项目]，[自己用/内部分享/在xx地区面对xx用户公开/商用]。我完全没有编程基础，打算用 AI 辅助完成（vibe coding）。请帮我评估：
+1. 这个项目的核心功能拆解成哪些模块？
+2. 每个模块的技术难度（简单/中等/困难）？
+3. 哪些部分 AI 可以直接生成代码搞定，哪些需要人工调试？
+4. 有没有现成的模板、框架或开源项目可以直接用？
+5. 零基础的人最容易卡在哪里？</div>
+                    </div>
+                    <div class="prompt-box">
+                        <span class="prompt-tag">WORKLOAD</span>
+                        <div class="prompt-text">基于上面的功能拆解，假设我用 [工具名字如Claude] 做 vibe coding：
+1. 每个模块大概需要多少轮 AI 对话才能完成？
+2. 整个项目从零到能跑起来，大致需要多少小时？
+3. 最小可用版本（MVP）只保留哪些功能？做 MVP 要多久？
+4. 有没有什么功能看起来简单但实际上是"深坑"？</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- S9: Difficulty II -->
+        <section id="s9">
+            <div class="content">
+                <h2 style="font-family: var(--font-heading); font-size: 3rem; margin-bottom: 2rem;">如何分辨项目难度 (II)</h2>
+                <div class="prompt-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="prompt-box">
+                        <span class="prompt-tag">TECH STACK</span>
+                        <div class="prompt-text">我想要确认一下技术路线。对于这个项目，请推荐一套对零基础最友好的技术栈：
+1. 前端用什么？后端用什么？数据库用什么？
+2. 部署到哪里最简单（最好免费）？
+3. 这套技术栈在 AI 代码生成中的支持度如何？</div>
+                    </div>
+                    <div class="prompt-box">
+                        <span class="prompt-tag">RISK CHECK</span>
+                        <div class="prompt-text">风险排雷。有没有"隐形门槛"：
+1. 需要第三方 API 且配置复杂的（支付/OAuth）？
+2. 需要处理实时数据或高并发的？
+3. 涉及用户隐私/安全合规的？
+4. 需要复杂的部署配置（Docker、CI/CD 等）？</div>
+                    </div>
+                    <div class="prompt-box" style="grid-column: span 2; border-color: var(--accent-tertiary);">
+                        <span class="prompt-tag">ADVANCED TIPS</span>
+                        <div class="prompt-text"><span style="color:#fff; font-weight:bold;">进阶技巧：</span>
+角色提示。如：请你扮演一个有 10 年经验的全栈工程师，对我坦诚评估。不要为了鼓励我而低估难度。
+用具体场景代替模糊描述。如：不要说"我想做一个社交 APP"，而是说："我想做一个小工具：用户可以上传一张照片，AI 自动生成一段描述文字...不需要登录，不需要评论功能。"</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- S10: Words -->
+        <section id="s10">
             <div class="content words-layout">
                 <div class="vibe-word">觉察</div><div class="vibe-dot">·</div>
                 <div class="vibe-word" style="color: var(--accent-primary);">感知</div><div class="vibe-dot">·</div>
@@ -373,44 +395,12 @@
             </div>
         </section>
 
-        <!-- S6: Browser Survey -->
-        <section id="s6">
-            <div class="content">
-                <div class="browser-mockup">
-                    <div class="browser-header">
-                        <div class="traffic-lights"><div class="light red"></div><div class="light yellow"></div><div class="light green"></div></div>
-                        <div class="browser-tab"><i data-lucide="form-input" size="14"></i> Vibe Coding Survey</div>
-                    </div>
-                    <div class="browser-content">
-                        <div class="survey-header-text">
-                            <h2>vibe coding课调查问卷</h2>
-                            <div class="survey-meta">
-                                本问卷由ai生成。仅用于HerS.Ground vibe coding课程学习需求调查。<br>
-                                注：同ip或同设备重复提交，后台仅记录第一遍。(可多选) CREATED BY 菜菜
-                            </div>
-                        </div>
-                        <div class="survey-box">
-                            <div class="survey-q-title">1. 假如你拥有一个"全能ai实习生",你最希望ta帮你解决工作中哪一类繁琐的事?</div>
-                            <div class="survey-ans-item"><div class="check-circle"></div><span>A. 自动处理 Excel/表格,生成各种分析报告</span></div>
-                            <div class="survey-ans-item"><div class="check-circle"></div><span>B. 把我的零散想法快速变成一个精美的网页或展示工具</span></div>
-                            <div class="survey-ans-item"><div class="check-circle"></div><span>C. 自动化处理邮件、日程和提醒</span></div>
-                            <div class="survey-ans-item"><div class="check-circle"></div><span>D. 开发一个属于我自己的小工具(如:记账、打卡、情绪管理)</span></div>
-                            <div class="survey-ans-item"><div class="check-circle"></div><span>E. 其他: ____________________________________</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- S7: Final -->
-        <section id="s7">
+        <!-- S11: Final -->
+        <section id="s11">
             <div class="content" style="text-align: center;">
                 <h1 style="font-family: var(--font-heading); font-size: 7rem; letter-spacing: 0.12em;">开启灵感流转</h1>
                 <div class="glass-card" style="display: inline-block; padding: 2rem 7rem; margin-top: 4rem; border-radius: 150px;">
                     <p style="color: var(--text-bright); font-family: var(--font-mono); letter-spacing: 12px; font-weight: 500; font-size: 1.3rem;">COMMAND + VIBE</p>
-                </div>
-                <div style="margin-top: 10rem; display: flex; justify-content: center; gap: 8rem; opacity: 0.35; font-size: 0.8rem; font-family: var(--font-mono); letter-spacing: 5px;">
-                    <span>DESIGN FOR CREATORS</span><span>POWERED BY GENAI</span><span>&copy; 2026</span>
                 </div>
             </div>
         </section>
@@ -419,7 +409,7 @@
     <div class="status-bar">
         <div>CAICAI_HUB // VIBE_OS_v2.9</div>
         <div style="display: flex; gap: 2rem;" id="dot-container"></div>
-        <div>STAY_ELEGANT.EXE</div>
+        <div>STAY_CREATIVE.EXE</div>
     </div>
 
     <script>
@@ -430,7 +420,7 @@
         const questAnchor = document.getElementById('quest-anchor');
         const grid = document.getElementById('grid');
 
-        // 初始化进度点
+        // 生成进度点
         sections.forEach((_, i) => {
             const dot = document.createElement('div');
             dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
@@ -446,49 +436,66 @@
 
             sections.forEach((sec, idx) => {
                 const rect = sec.getBoundingClientRect();
-                const offset = rect.top / window.innerHeight;
+                const offset = rect.top / window.innerHeight; 
                 const content = sec.querySelector('.content');
                 
                 if (content && Math.abs(offset) < 1.3) {
-                    let zTrans = 150 - Math.abs(offset) * 700;
-                    let xRot = offset * 25;
+                    let zTrans = 150 - Math.abs(offset) * 850;
+                    let xRot = offset * 18;
+                    let yRot = 0;
                     let scale = 1;
 
-                    // 特殊转场：S2 (Bio) -> S3 (Quote)
-                    if (idx === 1 && offset < 0) {
-                        const factor = Math.abs(offset);
-                        questAnchor.style.transform = `scale(${1 + factor * 6})`;
-                        questAnchor.style.opacity = 1 - factor * 2;
-                    } 
-                    if (idx === 1 && offset >= 0) {
-                        questAnchor.style.transform = `scale(1)`;
-                        questAnchor.style.opacity = 1;
+                    // S2 (Bio) 滑走缩放
+                    if (idx === 1) {
+                        if (offset < 0) {
+                            const factor = Math.min(Math.abs(offset), 1);
+                            questAnchor.style.transform = `scale(${1 + factor * 6})`;
+                            questAnchor.style.opacity = 1 - factor * 2;
+                        } else {
+                            questAnchor.style.transform = 'scale(1)';
+                            questAnchor.style.opacity = 1;
+                        }
                     }
 
-                    // S3 Quote 视差
-                    if (idx === 2) {
-                        const quote = content.querySelector('.quote-text');
-                        const author = content.querySelector('.quote-author');
-                        quote.style.transform = `translateZ(${100 - Math.abs(offset) * 200}px) rotateY(${offset * 10}deg)`;
-                        author.style.transform = `translateZ(${150 - Math.abs(offset) * 300}px)`;
-                    }
-
-                    // S5 词汇视差
+                    // S5 Browser Mockup
                     if (idx === 4) {
+                        const browser = content.querySelector('.browser-mockup');
+                        if (browser) {
+                            browser.style.transform = `translateZ(${180 - Math.abs(offset) * 400}px) rotateY(${offset * 12}deg)`;
+                        }
+                    }
+
+                    // S6 Table staggered
+                    if (idx === 5) {
+                        const rows = content.querySelectorAll('.course-row');
+                        rows.forEach((r, i) => {
+                            r.style.transform = `translateZ(${(i+1)*50 - Math.abs(offset)*100}px)`;
+                        });
+                    }
+
+                    // S7 Matrix
+                    if (idx === 6) {
+                        yRot = offset * 15;
+                        zTrans = 120 - Math.abs(offset) * 300;
+                    }
+
+                    // S8/S9 (Difficulty)
+                    if (idx === 7 || idx === 8) {
+                        const boxes = sec.querySelectorAll('.prompt-box');
+                        boxes.forEach((b, i) => {
+                            b.style.transform = `translateZ(${60 + i*40 - Math.abs(offset)*150}px) rotateY(${offset * 10}deg)`;
+                        });
+                    }
+
+                    // S10 (Words)
+                    if (idx === 9) {
                         const words = content.querySelectorAll('.vibe-word');
                         words[0].style.transform = `translateZ(${100 - offset * 120}px) translateX(${offset * -20}px)`;
-                        words[1].style.transform = `translateZ(${50 - offset * 80}px) scale(${1 - Math.abs(offset)*0.1})`;
                         words[2].style.transform = `translateZ(${150 - offset * 180}px) translateX(${offset * 20}px)`;
                     }
 
-                    // S6 浏览器窗口效果
-                    if (idx === 5) {
-                        const browser = content.querySelector('.browser-mockup');
-                        browser.style.transform = `translateZ(${180 - Math.abs(offset) * 350}px) rotateY(${offset * 8}deg)`;
-                    }
-
-                    content.style.transform = `translateZ(${zTrans}px) rotateX(${xRot}deg) scale(${scale})`;
-                    content.style.filter = `blur(${Math.abs(offset) * 15}px)`;
+                    content.style.transform = `translateZ(${zTrans}px) rotateX(${xRot}deg) rotateY(${yRot}deg) scale(${scale})`;
+                    content.style.filter = `blur(${Math.abs(offset) * 10}px)`;
                     content.style.opacity = 1 - Math.abs(offset) * 2.2;
                 }
             });
@@ -504,12 +511,8 @@
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => entry.target.classList.toggle('is-visible', entry.isIntersecting));
-        }, { threshold: 0.3 });
+        }, { threshold: 0.2 });
         sections.forEach(sec => observer.observe(sec));
     </script>
-
-    <style>
-        @keyframes bounce { 0%, 100% { transform: translateY(0); opacity: 0.2; } 50% { transform: translateY(20px); opacity: 0.7; } }
-    </style>
 </body>
 </html>
