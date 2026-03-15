@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Coding Workshop - Session 2</title>
+    <!-- 引用第一堂课同款字体 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.1.0/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-dark: #020204;
+            --accent-primary: #c3a6ff; 
+            --accent-secondary: #80ffea; 
+            --accent-tertiary: #ff8ab4;
+            --text-bright: #ffffff;
+            --text-soft: rgba(255, 255, 255, 0.45);
+            --glass: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.1);
+            --font-heading: "LXGW WenKai Screen", serif;
+            --font-serif: 'Playfair Display', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-dark); color: var(--text-bright); font-family: var(--font-heading), var(--font-body); overflow: hidden; height: 100vh; }
+
+        /* 背景 3D 效果 */
+        .scene-bg { position: fixed; inset: 0; z-index: -2; background: radial-gradient(circle at 50% 50%, #0d0d1a 0%, var(--bg-dark) 100%); }
+        .grid-plane { position: absolute; width: 300%; height: 300%; top: -100%; left: -100%; background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 100px 100px; transform: rotateX(75deg) translateZ(-350px); opacity: 0.12; }
+
+        #viewport { height: 100vh; overflow-y: auto; scroll-snap-type: y mandatory; scroll-behavior: smooth; perspective: 1800px; }
+        #viewport::-webkit-scrollbar { display: none; }
+
+        section { position: relative; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; scroll-snap-align: start; padding: 4rem; transform-style: preserve-3d; }
+        .content { max-width: 1200px; width: 100%; opacity: 0; transform: translateY(60px) translateZ(-100px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        section.active .content { opacity: 1; transform: translateY(0) translateZ(0); }
+
+        /* 状态栏 Footnote (对齐第一堂) */
+        .status-bar { position: fixed; bottom: 2rem; left: 3rem; right: 3rem; display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 4px; color: var(--text-soft); z-index: 100; text-transform: uppercase; }
+        .progress-dots { display: flex; gap: 1.5rem; align-items: center; }
+        .progress-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: 0.4s; cursor: pointer; }
+        .progress-dot.active { background: var(--accent-secondary); transform: scale(2.2); box-shadow: 0 0 12px var(--accent-secondary); }
+
+        /* 标题组件 */
+        .main-title { 
+            font-family: var(--font-serif); 
+            font-size: clamp(4rem, 14vw, 10rem); 
+            font-weight: 900; line-height: 1; 
+            letter-spacing: -0.02em; 
+            background: linear-gradient(135deg, #fff 40%, var(--accent-primary), var(--accent-secondary), var(--accent-tertiary)); 
+            background-size: 200% auto; 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            animation: shimmer 10s linear infinite; 
+            margin-bottom: 2rem; 
+        }
+        /* 中文标题适配：使用霞鹜文楷 */
+        .main-title.chinese { font-family: var(--font-heading), var(--font-serif); }
+        
+        @keyframes shimmer { to { background-position: 200% center; } }
+        
+        .slide-title { font-size: 3.8rem; margin-bottom: 3.5rem; color: #fff; font-weight: 700; }
+
+        /* 布局与卡片 */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; width: 100%; }
+        .eng-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; width: 100%; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--border); border-radius: 40px; padding: 3rem; }
+        .highlight { color: var(--accent-secondary); font-weight: 600; }
+        
+        p { font-size: 1.8rem; line-height: 1.6; }
+        li { font-size: 1.6rem; margin-bottom: 1rem; list-style: none; position: relative; padding-left: 2rem; }
+        li::before { content: "•"; position: absolute; left: 0; color: var(--accent-secondary); }
+
+        /* 终端组件 */
+        .terminal { background: #0d1117; border-radius: 24px; padding: 2.5rem; font-family: var(--font-mono); font-size: 1.35rem; border: 1px solid #30363d; line-height: 1.8; color: #fff; box-shadow: 0 40px 100px rgba(0,0,0,0.5); }
+        
+        /* 软件工程节点 */
+        .eng-node { background: var(--glass); border: 1px solid var(--border); padding: 1.8rem; border-radius: 24px; transition: 0.3s; }
+        .eng-node:hover { border-color: var(--accent-secondary); transform: translateY(-8px); }
+        .eng-title { color: var(--accent-secondary); font-weight: 700; margin-bottom: 0.8rem; font-size: 1.4rem; }
+        .eng-sub { font-size: 0.9rem; color: var(--accent-primary); font-family: var(--font-mono); margin-bottom: 0.5rem; }
+        .eng-desc { font-size: 1rem; opacity: 0.7; line-height: 1.5; }
+
+        .vibe-tag { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-primary); border: 1px solid var(--accent-primary); padding: 4px 14px; border-radius: 100px; letter-spacing: 2px; display: inline-block; margin-bottom: 1rem; }
+        .tool-chip { font-family: var(--font-mono); font-size: 1.2rem; color: var(--accent-secondary); margin-right: 1.5rem; }
+
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-15px);} 60% {transform: translateY(-8px);} }
+    </style>
+</head>
+<body>
+
+    <div class="scene-bg"><div class="grid-plane" id="grid"></div></div>
+
+    <div id="viewport">
+        <!-- Slide 1: 封面 (对齐第一堂) -->
+        <section id="s1" class="active">
+            <div class="content" style="text-align: center;">
+                <div style="font-size: 0.8rem; letter-spacing: 0.8em; color: var(--accent-secondary); margin-bottom: 3rem; font-family: var(--font-mono);">SYSTEM_BOOT: SUCCESS</div>
+                <h1 class="main-title">Vibe Coding</h1>
+                <p style="font-family: var(--font-heading); font-size: 3.5rem; letter-spacing: 0.12em; opacity: 0.9; font-weight: 300;">走近真实的项目开发</p>
+                <div style="margin-top: 6rem; opacity: 0.3;"><i data-lucide="chevrons-down" style="width: 54px; height: 54px; animation: bounce 3s infinite;"></i></div>
+            </div>
+        </section>
+
+        <!-- Slide 2: 自学者的必经之坑 (静态卡片) -->
+        <section id="s2">
+            <div class="content">
+                <h2 class="slide-title">自学者的必经之坑</h2>
+                <div class="glass-card">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;">
+                        <div>
+                            <li><span class="highlight">路径困惑</span>：不知道下一步该学什么。</li>
+                            <li><span class="highlight">没有存档</span>：改动后后悔，不知道如何撤销修改。</li>
+                            <li><span class="highlight">Bug如山倒</span>：看起来能动，但全是隐患，一改就崩。</li>
+                            <li><span class="highlight">黑盒迷宫</span>：代码能跑但完全不知所以然。</li>
+                        </div>
+                        <div>
+                            <li><span class="highlight">AI变笨</span>：刚开始好好的，越写越费劲。</li>
+                            <li><span class="highlight">沟通失败</span>：AI误解表达，做了一个意外操作。</li>
+                            <li><span class="highlight">Token成本</span>：简单功能却消耗了很多tokens。</li>
+                            <li><span class="highlight">细节陷阱</span>：在微调 UI 中耗尽 80% 精力。</li>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 3: 优雅开发建议 -->
+        <section id="s3">
+            <div class="content">
+                <h2 class="slide-title">优雅开发建议</h2>
+                <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
+                    <div class="glass-card" style="padding: 1.8rem 4rem;">
+                        <li style="font-size: 1.9rem; margin:0;">1. 做个好“产品经理”：<span class="highlight">先写产品需求文档 (PRD)</span></li>
+                    </div>
+                    <div class="glass-card" style="padding: 1.8rem 4rem;">
+                        <li style="font-size: 1.9rem; margin:0;">2. 补齐<span class="highlight">“架构认知”</span>，而非“语法细节”</li>
+                    </div>
+                    <div class="glass-card" style="padding: 1.8rem 4rem;">
+                        <li style="font-size: 1.9rem; margin:0;">3. 打破“黑盒”，让 AI <span class="highlight">保持逻辑习惯</span></li>
+                    </div>
+                    <div class="glass-card" style="padding: 1.8rem 4rem;">
+                        <li style="font-size: 1.9rem; margin:0;">4. 了解你的 AI：提示词技巧、Memory 设计</li>
+                    </div>
+                    <div class="glass-card" style="padding: 1.8rem 4rem;">
+                        <li style="font-size: 1.9rem; margin:0;">5. <span class="highlight">学点程序员思维</span></li>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 4: 低代码 vs IDE -->
+        <section id="s4">
+            <div class="content">
+                <h2 class="slide-title">低代码 vs IDE</h2>
+                <div class="grid-2">
+                    <div class="glass-card" style="border-top: 8px solid var(--accent-secondary);">
+                        <div class="vibe-tag">No-Code 平台</div>
+                        <h3 style="font-size: 2.5rem; margin-bottom: 1.5rem;">你说，AI 做</h3>
+                        <div style="margin-bottom: 2rem;">
+                            <span class="tool-chip">Lovable</span><span class="tool-chip">Replit</span><span class="tool-chip">Bolt.new</span><span class="tool-chip" style="opacity: 0.4;">...</span>
+                        </div>
+                        <p style="font-size: 1.5rem;">比喻：<span class="highlight">打车</span>。你只负责目的地。适合快速验证 MVP。</p>
+                    </div>
+                    <div class="glass-card" style="border-top: 8px solid var(--accent-primary);">
+                        <div class="vibe-tag">AI IDE</div>
+                        <h3 style="font-size: 2.5rem; margin-bottom: 1.5rem;">你和 AI 一起写</h3>
+                        <div style="margin-bottom: 2rem;">
+                            <span class="tool-chip">Cursor</span><span class="tool-chip">Windsurf</span><span class="tool-chip">Claude Code</span><span class="tool-chip" style="opacity: 0.4;">...</span>
+                        </div>
+                        <p style="font-size: 1.5rem;">比喻：<span class="highlight">副驾驶</span>。你在开车，AI 辅助导航。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 5: 程序员思维 -->
+        <section id="s5">
+            <div class="content">
+                <h2 class="slide-title">程序员思维</h2>
+                <div class="grid-2" style="align-items: center;">
+                    <div class="terminal">
+                        <div style="color: #8b949e; font-style: italic; margin-bottom: 1rem;">// 迭代：先跑通，再完美</div>
+                        <p style="font-family: var(--font-mono);">
+                            <span style="color: #ff7b72;">while</span> (product.isNotPerfect()) {<br>
+                            &nbsp;&nbsp;<span style="color: #d2a8ff;">make_it_work</span>(); <span style="color: #6a737d;">// 先跑通闭环</span><br>
+                            &nbsp;&nbsp;<span style="color: #d2a8ff;">make_it_right</span>(); <span style="color: #6a737d;">// 修正缺陷</span><br>
+                            &nbsp;&nbsp;<span style="color: #d2a8ff;">make_it_fast</span>(); <span style="color: #6a737d;">// 性能优化</span><br>
+                            }
+                        </p>
+                    </div>
+                    <div class="glass-card">
+                        <h3 style="color: var(--accent-primary); font-size: 2.5rem; margin-bottom: 1.5rem;">不要重复造轮子 (DRY)</h3>
+                        <p style="font-size: 1.5rem;">AI 时代，你的职责是<span class="highlight">系统架构师</span>而非搬砖工。善用现成 API 与开源库，让 AI 帮你拼装。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 6: 生命周期 -->
+        <section id="s6">
+            <div class="content">
+                <h2 class="slide-title">软件工程全生命周期</h2>
+                <div class="eng-grid">
+                    <div class="eng-node"><div class="eng-title">需求与定义</div><div class="eng-sub">PM / BA</div><p class="eng-desc">商业逻辑转变为工程目标，评审商业闭环。</p></div>
+                    <div class="eng-node"><div class="eng-title">设计与合规</div><div class="eng-sub">Architect / Legal</div><p class="eng-desc">隐私预审 (GDPR)，数据流合规审计。</p></div>
+                    <div class="eng-node"><div class="eng-title">开发与安全</div><div class="eng-sub">Dev / Security</div><p class="eng-desc">编码审计与威胁建模，安全介入流程。</p></div>
+                    <div class="eng-node"><div class="eng-title">质量保障</div><div class="eng-sub">QA / SDET</div><p class="eng-desc">自动化测试，验收交付质量与平衡。</p></div>
+                    <div class="eng-node"><div class="eng-title">发布与交付</div><div class="eng-sub">DevOps / SRE</div><p class="eng-desc">灰度发布、蓝绿部署，确保业务零停机。</p></div>
+                    <div class="eng-node"><div class="eng-title">运维与演进</div><div class="eng-sub">SRE / Support</div><p class="eng-desc">SLA 维护，监控报警与运行故障复盘。</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 7: 能力与审美 -->
+        <section id="s7">
+            <div class="content">
+                <h2 class="slide-title">必须建立的个人能力</h2>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+                    <div class="glass-card"><h4 style="color:var(--accent-secondary); font-size: 2rem; margin-bottom: 1rem;">需求拆解</h4><p style="font-size: 1.1rem; opacity: 0.8;">将模糊想法拆成 AI 可执行的步骤。</p></div>
+                    <div class="glass-card"><h4 style="color:var(--accent-primary); font-size: 2rem; margin-bottom: 1rem;">调试思维</h4><p style="font-size: 1.1rem; opacity: 0.8;">看懂错误信息，精准指挥 AI 修复。</p></div>
+                    <div class="glass-card"><h4 style="color:var(--accent-tertiary); font-size: 2rem; margin-bottom: 1rem;">系统常识</h4><p style="font-size: 1.1rem; opacity: 0.8;">理解数据库、API 等协作逻辑。</p></div>
+                </div>
+                <div class="glass-card" style="margin-top: 3.5rem; text-align: center; border-color: var(--accent-secondary); padding: 2.5rem;">
+                    <h3 style="font-size: 2.2rem;">终极竞争力：<span style="color:var(--accent-secondary)">审美与产品直觉</span></h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 8: 结尾 (对齐第一堂) -->
+        <section id="s8">
+            <div class="content" style="text-align: center;">
+                <h1 class="main-title chinese">开启灵感流转</h1>
+                <div class="glass-card" style="display: inline-block; padding: 2.2rem 8rem; margin-top: 4rem; border-radius: 200px;">
+                    <p style="color: var(--text-bright); font-family: var(--font-mono); letter-spacing: 12px; font-weight: 500; font-size: 1.6rem;">COMMAND + VIBE</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footnote Status Bar (对齐第一堂) -->
+    <div class="status-bar">
+        <div>CAICAI_HUB // VIBE_OS_v3.9</div>
+        <div class="progress-dots" id="dots-container"></div>
+        <div>STAY_CREATIVE.EXE</div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        const viewport = document.getElementById('viewport');
+        const sections = document.querySelectorAll('section');
+        const dotsContainer = document.getElementById('dots-container');
+        const grid = document.getElementById('grid');
+
+        // 初始化指示点
+        sections.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+            dot.onclick = () => viewport.scrollTo({ top: i * window.innerHeight, behavior: 'smooth' });
+            dotsContainer.appendChild(dot);
+        });
+        const dots = document.querySelectorAll('.progress-dot');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const idx = Array.from(sections).indexOf(entry.target);
+                    sections.forEach(s => s.classList.remove('active'));
+                    entry.target.classList.add('active');
+                    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+                }
+            });
+        }, { threshold: 0.5 });
+
+        sections.forEach(sec => observer.observe(sec));
+
+        viewport.addEventListener('scroll', () => {
+            grid.style.transform = `rotateX(75deg) translateZ(-400px) translateY(${viewport.scrollTop * 0.12}px)`;
+        });
+    </script>
+</body>
+</html>
